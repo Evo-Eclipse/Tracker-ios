@@ -24,35 +24,49 @@ final class TabBarViewController: UITabBarController {
         tabBar.tintColor = .ypBlue
         tabBar.unselectedItemTintColor = .ypGray
 
-        if #available(iOS 13.0, *) {
-            let appearance = UITabBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .ypWhite
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .ypWhite
 
-            tabBar.standardAppearance = appearance
-            tabBar.scrollEdgeAppearance = appearance
-        } else {
-            tabBar.barTintColor = .ypWhite
-            tabBar.isTranslucent = false
-        }
+        tabBar.standardAppearance = appearance
+        tabBar.scrollEdgeAppearance = appearance
     }
 
     private func setupViewControllers() {
-        let trackersViewController = TrackersViewController()
-        let trackersNavigationController = UINavigationController(rootViewController: trackersViewController)
-        trackersNavigationController.tabBarItem = UITabBarItem(
-            title: "Трекеры",
-            image: UIImage(systemName: "record.circle.fill"),  // record.circle
-            selectedImage: UIImage(systemName: "record.circle.fill")
-        )
+        // Get stores from AppDelegate
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            assertionFailure("AppDelegate unavailable")
+            return
+        }
 
-        let statisticsViewController = StatisticsViewController()
-        statisticsViewController.tabBarItem = UITabBarItem(
-            title: "Статистика",
+        let trackerStore = appDelegate.trackerStore
+        let categoryStore = appDelegate.categoryStore
+        let recordStore = appDelegate.recordStore
+
+        // Create StatisticsViewController with ViewModel
+        let statisticsViewModel = StatisticsViewModel(trackerStore: trackerStore, recordStore: recordStore)
+        let statisticsViewController = StatisticsViewController(viewModel: statisticsViewModel)
+        let statisticsNavigationController = UINavigationController(rootViewController: statisticsViewController)
+        statisticsNavigationController.tabBarItem = UITabBarItem(
+            title: L10n.statisticsTab,
             image: UIImage(systemName: "hare.fill"),  // hare
             selectedImage: UIImage(systemName: "hare.fill")
         )
 
-        viewControllers = [trackersNavigationController, statisticsViewController]
+        // Create TrackersViewController with ViewModel
+        let trackersViewModel = TrackersViewModel(
+            trackerStore: trackerStore,
+            recordStore: recordStore,
+            categoryStore: categoryStore
+        )
+        let trackersViewController = TrackersViewController(viewModel: trackersViewModel)
+        let trackersNavigationController = UINavigationController(rootViewController: trackersViewController)
+        trackersNavigationController.tabBarItem = UITabBarItem(
+            title: L10n.trackersTab,
+            image: UIImage(systemName: "record.circle.fill"),  // record.circle
+            selectedImage: UIImage(systemName: "record.circle.fill")
+        )
+
+        viewControllers = [trackersNavigationController, statisticsNavigationController]
     }
 }

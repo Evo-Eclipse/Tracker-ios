@@ -28,9 +28,9 @@ final class OnboardingPageViewController: UIViewController {
 
     // MARK: - Initializers
 
-    init(imageName: String, labelText: String) {
+    init(image: UIImage, labelText: String) {
         super.init(nibName: nil, bundle: nil)
-        backgroundImageView.image = UIImage(named: imageName)
+        backgroundImageView.image = image
         textLabel.text = labelText
     }
 

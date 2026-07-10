@@ -13,13 +13,13 @@ final class OnboardingViewController: UIPageViewController {
 
     private lazy var pages: [UIViewController] = {
         let firstPage = OnboardingPageViewController(
-            imageName: "image_onboarding_first",
-            labelText: "Отслеживайте только то, что хотите"
+            image: UIImage.imageOnboardingFirst,
+            labelText: L10n.onboardingFirstPage
         )
 
         let lastPage = OnboardingPageViewController(
-            imageName: "image_onboarding_last",
-            labelText: "Даже если это не литры воды и йога"
+            image: UIImage.imageOnboardingLast,
+            labelText: L10n.onboardingSecondPage
         )
 
         return [firstPage, lastPage]
@@ -38,7 +38,7 @@ final class OnboardingViewController: UIPageViewController {
 
     private lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Вот это технологии!", for: .normal)
+        button.setTitle(L10n.onboardingButton, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypBlack
         button.tintColor = .ypWhite
