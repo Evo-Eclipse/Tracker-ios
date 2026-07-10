@@ -11,6 +11,8 @@ protocol TrackerCellDelegate: AnyObject {
     func didToggleTracker(_ tracker: Tracker, on date: Date)
     func getCompletionCount(for trackerId: UUID) -> Int
     func isTrackerCompleted(_ trackerId: UUID, on date: Date) -> Bool
+    func didRequestEditTracker(_ tracker: Tracker)
+    func didRequestDeleteTracker(_ tracker: Tracker)
 }
 
 final class TrackerCell: UICollectionViewCell {
@@ -28,9 +30,9 @@ final class TrackerCell: UICollectionViewCell {
 
     private lazy var cardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .ypBlack  // Adapting
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
+        // view.backgroundColor will be adapted during cell configuration
         return view
     }()
 
@@ -38,25 +40,24 @@ final class TrackerCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
         label.textAlignment = .center
-        label.text = "🌱"  // Adapting
+        // label.text will be adapted during cell configuration
         return label
     }()
 
     private lazy var emojiBackgroundView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.ypWhite.withAlphaComponent(0.3)
+        view.backgroundColor = UIColor.white.withAlphaComponent(0.3)
         view.layer.cornerRadius = 12
         view.layer.masksToBounds = true
         return view
     }()
-
 
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .ypWhite
         label.numberOfLines = 2
-        label.text = "Поливать растения"  // Adapting
+        // label.text will be adapted during cell configuration
         return label
     }()
 
@@ -64,16 +65,16 @@ final class TrackerCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .ypBlack
-        label.text = "0 дней"  // Adapting
+        // label.text will be adapted during cell configuration
         return label
     }()
 
     private lazy var completeButton: UIButton = {
         let button = UIButton(type: .custom)
-        let image = UIImage(named: "button_complete")?.withRenderingMode(.alwaysTemplate)
+        let image = UIImage.buttonCompleteInactive.withRenderingMode(.alwaysTemplate)
         button.setImage(image, for: .normal)
-        button.tintColor = .ypBlack  // Adapting
         button.addTarget(self, action: #selector(completeButtonTapped), for: .touchUpInside)
+        // button.tintColor will be adapted during cell configuration
         return button
     }()
 
@@ -84,6 +85,7 @@ final class TrackerCell: UICollectionViewCell {
 
         setupViews()
         setupConstraints()
+        setupGestures()
     }
 
     required init?(coder: NSCoder) {
@@ -95,7 +97,7 @@ final class TrackerCell: UICollectionViewCell {
     @objc private func completeButtonTapped() {
         guard let tracker = tracker else { return }
 
-        let calendar = Calendar.current
+        let calendar = Calendar.app
         let today = calendar.startOfDay(for: Date())
         let selectedDate = calendar.startOfDay(for: currentDate)
 
@@ -174,18 +176,23 @@ final class TrackerCell: UICollectionViewCell {
         ])
     }
 
+    private func setupGestures() {
+        let contextMenuInteraction = UIContextMenuInteraction(delegate: self)
+        cardView.addInteraction(contextMenuInteraction)
+    }
+
     private func updateCompletionState() {
         guard let tracker = tracker else { return }
 
         isCompleted = delegate?.isTrackerCompleted(tracker.id, on: currentDate) ?? false
 
-        let imageName = isCompleted ? "button_completed" : "button_complete"
-        let image = UIImage(named: imageName)?.withRenderingMode(.alwaysTemplate)
+        let image = (isCompleted ? UIImage.buttonCompleteActive : UIImage.buttonCompleteInactive).withRenderingMode(.alwaysTemplate)
+
         completeButton.setImage(image, for: .normal)
 
         completeButton.alpha = isCompleted ? 0.3 : 1.0
 
-        let calendar = Calendar.current
+        let calendar = Calendar.app
         let today = calendar.startOfDay(for: Date())
         let selectedDate = calendar.startOfDay(for: currentDate)
         completeButton.isEnabled = selectedDate <= today
@@ -195,6 +202,106 @@ final class TrackerCell: UICollectionViewCell {
         guard let tracker = tracker else { return }
 
         let completionCount = delegate?.getCompletionCount(for: tracker.id) ?? 0
-        countLabel.text = completionCount.localizedDayCount
+        countLabel.text = DaysFormatter.localizedDaysCount(completionCount)
     }
 }
+
+// MARK: - UIContextMenuInteractionDelegate
+
+extension TrackerCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        guard let tracker = tracker else { return nil }
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            let editAction = UIAction(title: L10n.editAction, image: nil) { [weak self] _ in
+                self?.delegate?.didRequestEditTracker(tracker)
+            }
+
+            let deleteAction = UIAction(title: L10n.deleteAction, image: nil, attributes: .destructive) { [weak self] _ in
+                self?.delegate?.didRequestDeleteTracker(tracker)
+            }
+
+            return UIMenu(title: "", children: [editAction, deleteAction])
+        }
+    }
+}
+
+// MARK: - Preview
+
+#if DEBUG
+private final class MockTrackerCellDelegate: TrackerCellDelegate {
+    private let completionCount: Int
+    private let isCompleted: Bool
+
+    init(completionCount: Int = 0, isCompleted: Bool = false) {
+        self.completionCount = completionCount
+        self.isCompleted = isCompleted
+    }
+
+    func didToggleTracker(_ tracker: Tracker, on date: Date) {}
+    func getCompletionCount(for trackerId: UUID) -> Int { completionCount }
+    func isTrackerCompleted(_ trackerId: UUID, on date: Date) -> Bool { isCompleted }
+    func didRequestEditTracker(_ tracker: Tracker) {}
+    func didRequestDeleteTracker(_ tracker: Tracker) {}
+}
+
+#Preview("Regular Tracker Cell") {
+    let tracker = Tracker(
+        id: UUID(),
+        title: "Пить воду",
+        color: UIColor.ypSelection1.appColor,
+        emoji: "💧",
+        schedule: [.monday, .tuesday, .wednesday, .thursday, .friday]
+    )
+
+    let cell: UIView = {
+        let c = TrackerCell()
+        c.delegate = MockTrackerCellDelegate(completionCount: 5, isCompleted: false)
+        c.configure(with: tracker, on: Date())
+        c.frame = CGRect(x: 0, y: 0, width: 167, height: 158)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+
+#Preview("Completed Tracker Cell") {
+    let tracker = Tracker(
+        id: UUID(),
+        title: "Сделано!",
+        color: UIColor.ypSelection2.appColor,
+        emoji: "✅",
+        schedule: [.monday]
+    )
+
+    let cell: UIView = {
+        let c = TrackerCell()
+        c.delegate = MockTrackerCellDelegate(completionCount: 10, isCompleted: true)
+        c.configure(with: tracker, on: Date())
+        c.frame = CGRect(x: 0, y: 0, width: 167, height: 158)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+
+#Preview("Long Title Tracker Cell") {
+    let tracker = Tracker(
+        id: UUID(),
+        title: "Очень длинное название трекера которое должно переноситься",
+        color: UIColor.ypSelection3.appColor,
+        emoji: "📝",
+        schedule: [.saturday, .sunday]
+    )
+
+    let cell: UIView = {
+        let c = TrackerCell()
+        c.delegate = MockTrackerCellDelegate(completionCount: 3, isCompleted: false)
+        c.configure(with: tracker, on: Date())
+        c.frame = CGRect(x: 0, y: 0, width: 167, height: 158)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+#endif
