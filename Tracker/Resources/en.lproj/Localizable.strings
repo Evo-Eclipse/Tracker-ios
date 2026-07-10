@@ -1,0 +1,77 @@
+/*
+  Localizable.strings
+  Tracker
+
+  Created by Pavel Komarov on 13.08.2025.
+
+*/
+
+"cancelButton" = "Cancel";
+"createButton" = "Create";
+"saveButton" = "Save";
+"doneButton" = "Done";
+"addCategoryButton" = "Add Category";
+"onboardingButton" = "These are the technologies!";
+"filtersButton" = "Filters";
+
+"habitType" = "Habit";
+"irregularEventType" = "Irregular Event";
+"newHabitTitle" = "New Habit";
+"newIrregularEventTitle" = "New Irregular Event";
+
+"trackersTab" = "Trackers";
+"statisticsTab" = "Statistics";
+"scheduleTitle" = "Schedule";
+"categoryTitle" = "Category";
+"trackerCreationTitle" = "Creating Tracker";
+"newCategoryTitle" = "New Category";
+"emojiSectionTitle" = "Emoji";
+"colorSectionTitle" = "Color";
+"filtersTitle" = "Filters";
+
+"allTrackersFilter" = "All trackers";
+"todayTrackersFilter" = "Today trackers";
+"completedTrackersFilter" = "Completed";
+"incompleteTrackersFilter" = "Incomplete";
+
+"trackerNamePlaceholder" = "Enter tracker name";
+"categoryNamePlaceholder" = "Enter category name";
+"searchPlaceholder" = "Search";
+
+"mondayFull" = "Monday";
+"tuesdayFull" = "Tuesday";
+"wednesdayFull" = "Wednesday";
+"thursdayFull" = "Thursday";
+"fridayFull" = "Friday";
+"saturdayFull" = "Saturday";
+"sundayFull" = "Sunday";
+
+"mondayShort" = "Mon";
+"tuesdayShort" = "Tue";
+"wednesdayShort" = "Wed";
+"thursdayShort" = "Thu";
+"fridayShort" = "Fri";
+"saturdayShort" = "Sat";
+"sundayShort" = "Sun";
+
+"emptyTrackersMessage" = "What will we track?";
+"noSearchResultsMessage" = "Nothing found";
+"emptyStatisticsMessage" = "Nothing to analyze yet";
+"completedTrackersTitle" = "Trackers completed";
+"bestPeriodTitle" = "Best period";
+"perfectDaysTitle" = "Perfect days";
+"averageValueTitle" = "Average value";
+"onboardingFirstPage" = "Track only what you want";
+"onboardingSecondPage" = "Even if it's not liters of water and yoga";
+"categoriesDescription" = "Habits and events can be\ncombined by meaning";
+"characterLimitMessage" = "38 character limit";
+"characterLimitTemplate" = "%d character limit";
+"everyDaySchedule" = "Every day";
+"defaultCategoryName" = "Default";
+
+"editAction" = "Edit";
+"deleteAction" = "Delete";
+"deleteConfirmationTitle" = "Are you sure you want to delete the tracker?";
+"editHabitTitle" = "Editing habit";
+
+"daysCount" = "days";

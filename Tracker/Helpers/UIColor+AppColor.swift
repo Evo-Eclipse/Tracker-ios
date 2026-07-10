@@ -18,14 +18,14 @@ public extension UIColor {
     }
 
     var appColor: AppColor {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        if getRed(&r, green: &g, blue: &b, alpha: &a) {
-            return AppColor(red: Double(r), green: Double(g), blue: Double(b), alpha: Double(a))
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        if getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return AppColor(red: Double(red), green: Double(green), blue: Double(blue), alpha: Double(alpha))
         }
         // Fallback using white/alpha if needed
         var white: CGFloat = 0
-        if getWhite(&white, alpha: &a) {
-            return AppColor(red: Double(white), green: Double(white), blue: Double(white), alpha: Double(a))
+        if getWhite(&white, alpha: &alpha) {
+            return AppColor(red: Double(white), green: Double(white), blue: Double(white), alpha: Double(alpha))
         }
         return .black
     }

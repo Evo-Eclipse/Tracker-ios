@@ -1,0 +1,77 @@
+/*
+  Localizable.strings
+  Tracker
+
+  Created by Pavel Komarov on 13.08.2025.
+
+*/
+
+"cancelButton" = "Отменить";
+"createButton" = "Создать";
+"saveButton" = "Сохранить";
+"doneButton" = "Готово";
+"addCategoryButton" = "Добавить категорию";
+"onboardingButton" = "Вот это технологии!";
+"filtersButton" = "Фильтры";
+
+"habitType" = "Привычка";
+"irregularEventType" = "Нерегулярное событие";
+"newHabitTitle" = "Новая привычка";
+"newIrregularEventTitle" = "Новое нерегулярное событие";
+
+"trackersTab" = "Трекеры";
+"statisticsTab" = "Статистика";
+"scheduleTitle" = "Расписание";
+"categoryTitle" = "Категория";
+"trackerCreationTitle" = "Создание трекера";
+"newCategoryTitle" = "Новая категория";
+"emojiSectionTitle" = "Emoji";
+"colorSectionTitle" = "Цвет";
+"filtersTitle" = "Фильтры";
+
+"allTrackersFilter" = "Все трекеры";
+"todayTrackersFilter" = "Трекеры на сегодня";
+"completedTrackersFilter" = "Завершенные";
+"incompleteTrackersFilter" = "Не завершенные";
+
+"trackerNamePlaceholder" = "Введите название трекера";
+"categoryNamePlaceholder" = "Введите название категории";
+"searchPlaceholder" = "Поиск";
+
+"mondayFull" = "Понедельник";
+"tuesdayFull" = "Вторник";
+"wednesdayFull" = "Среда";
+"thursdayFull" = "Четверг";
+"fridayFull" = "Пятница";
+"saturdayFull" = "Суббота";
+"sundayFull" = "Воскресенье";
+
+"mondayShort" = "Пн";
+"tuesdayShort" = "Вт";
+"wednesdayShort" = "Ср";
+"thursdayShort" = "Чт";
+"fridayShort" = "Пт";
+"saturdayShort" = "Сб";
+"sundayShort" = "Вс";
+
+"emptyTrackersMessage" = "Что будем отслеживать?";
+"noSearchResultsMessage" = "Ничего не найдено";
+"emptyStatisticsMessage" = "Анализировать пока нечего";
+"completedTrackersTitle" = "Трекеров завершено";
+"bestPeriodTitle" = "Лучший период";
+"perfectDaysTitle" = "Идеальные дни";
+"averageValueTitle" = "Среднее значение";
+"onboardingFirstPage" = "Отслеживайте только то, что хотите";
+"onboardingSecondPage" = "Даже если это не литры воды и йога";
+"categoriesDescription" = "Привычки и события можно\nобъединить по смыслу";
+"characterLimitMessage" = "Ограничение 38 символов";
+"characterLimitTemplate" = "Ограничение %d символов";
+"everyDaySchedule" = "Каждый день";
+"defaultCategoryName" = "По умолчанию";
+
+"editAction" = "Редактировать";
+"deleteAction" = "Удалить";
+"deleteConfirmationTitle" = "Уверены что хотите удалить трекер?";
+"editHabitTitle" = "Редактирование привычки";
+
+"daysCount" = "дней";
