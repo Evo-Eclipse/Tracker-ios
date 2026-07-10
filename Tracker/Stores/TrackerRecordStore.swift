@@ -8,7 +8,12 @@
 import CoreData
 
 protocol TrackerRecordStoreDelegate: AnyObject {
-    func recordStoreDidChange(sectionChanges: [StoreSectionChange], objectChanges: [StoreObjectChange])
+    /// Called after completion records change (a tracker was marked complete/incomplete)
+    func recordStoreDidChange()
+}
+
+protocol TrackerRecordStoreStatisticsDelegate: AnyObject {
+    func recordStoreDidUpdateStatistics()
 }
 
 final class TrackerRecordStore: NSObject {
@@ -16,6 +21,7 @@ final class TrackerRecordStore: NSObject {
     // MARK: - Public Properties
 
     weak var delegate: TrackerRecordStoreDelegate?
+    weak var statisticsDelegate: TrackerRecordStoreStatisticsDelegate?
 
     // MARK: - Private Properties
 
@@ -29,11 +35,11 @@ final class TrackerRecordStore: NSObject {
         self.context = container.viewContext
         super.init()
     }
-    
+
     // MARK: - Public Methods
 
     func isCompleted(trackerId: UUID, on date: Date) -> Bool {
-        let normalized = Calendar.current.startOfDay(for: date)
+        let normalized = Calendar.app.startOfDay(for: date)
         let trackerReq: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
         trackerReq.fetchLimit = 1
         trackerReq.predicate = NSPredicate(format: "%K == %@", "id", trackerId as CVarArg)
@@ -50,9 +56,11 @@ final class TrackerRecordStore: NSObject {
     }
 
     func toggle(trackerId: UUID, on date: Date) {
-        let normalized = Calendar.current.startOfDay(for: date)
+        let normalized = Calendar.app.startOfDay(for: date)
 
-        container.performBackgroundTask { ctx in
+        container.performBackgroundTask { [weak self] ctx in
+            guard let self = self else { return }
+
             // Fetch tracker object in this context
             let trackerReq: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
             trackerReq.fetchLimit = 1
@@ -75,7 +83,16 @@ final class TrackerRecordStore: NSObject {
                 obj.date = normalized
                 obj.id = UUID()
             }
-            do { try ctx.save() } catch { print("[TrackerRecordStore] toggle error: \(error)") }
+            do {
+                try ctx.save()
+                // Notify observers on the main thread
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate?.recordStoreDidChange()
+                    self?.statisticsDelegate?.recordStoreDidUpdateStatistics()
+                }
+            } catch {
+                print("[TrackerRecordStore] toggle error: \(error)")
+            }
         }
     }
 
@@ -88,5 +105,16 @@ final class TrackerRecordStore: NSObject {
         let req: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         req.predicate = NSPredicate(format: "%K == %@", #keyPath(TrackerRecordCoreData.tracker), trackerObj)
         do { return try context.count(for: req) } catch { return 0 }
+    }
+
+    /// Returns all completion records as (trackerId, day-normalized date) pairs. Used for statistics.
+    func allRecords() -> [(trackerId: UUID, date: Date)] {
+        let req: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        guard let objs = try? context.fetch(req) else { return [] }
+        let calendar = Calendar.app
+        return objs.compactMap { obj in
+            guard let date = obj.date, let trackerId = obj.tracker?.id else { return nil }
+            return (trackerId, calendar.startOfDay(for: date))
+        }
     }
 }

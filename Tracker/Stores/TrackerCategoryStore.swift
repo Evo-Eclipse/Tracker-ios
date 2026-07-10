@@ -21,6 +21,14 @@ final class TrackerCategoryStore: NSObject {
 
     private let container: NSPersistentContainer
     private let context: NSManagedObjectContext
+    private lazy var changeCollector: FetchedResultsChangeCollector = {
+        let collector = FetchedResultsChangeCollector()
+        collector.onChange = { [weak self] sectionChanges, objectChanges in
+            guard let self else { return }
+            self.delegate?.categoryStoreDidChange(sectionChanges: sectionChanges, objectChanges: objectChanges)
+        }
+        return collector
+    }()
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData> = {
         let request: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: #keyPath(TrackerCategoryCoreData.title), ascending: true, selector: #selector(NSString.localizedCaseInsensitiveCompare(_:)))]
@@ -30,12 +38,9 @@ final class TrackerCategoryStore: NSObject {
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        frc.delegate = self
+        frc.delegate = changeCollector
         return frc
     }()
-
-    private var sectionChanges: [StoreSectionChange] = []
-    private var objectChanges: [StoreObjectChange] = []
 
     // MARK: - Initializers
 
@@ -49,7 +54,9 @@ final class TrackerCategoryStore: NSObject {
     // MARK: - Public Methods
 
     func createCategory(title: String) {
-        container.performBackgroundTask { ctx in
+        container.performBackgroundTask { [weak self] ctx in
+            guard let self = self else { return }
+
             if let _ = self.fetchCategory(title: title, in: ctx) { return }  // If category exists, do nothing
             let cat = TrackerCategoryCoreData(context: ctx)
             cat.title = title
@@ -58,15 +65,20 @@ final class TrackerCategoryStore: NSObject {
     }
 
     func deleteCategory(title: String) {
-        container.performBackgroundTask { ctx in
+        container.performBackgroundTask { [weak self] ctx in
+            guard let self = self else { return }
+
             guard let cat = self.fetchCategory(title: title, in: ctx) else { return }
+            // Don't orphan trackers: refuse to delete a category that still has trackers
+            guard (cat.trackers?.count ?? 0) == 0 else { return }
             ctx.delete(cat)
             do { try ctx.save() } catch { print("[CategoryStore] delete error: \(error)") }
         }
     }
 
-    func getAllCategories() -> [TrackerCategoryCoreData] {
-        return fetchedResultsController.fetchedObjects ?? []
+    /// Returns all category titles (domain-friendly, no CoreData leakage)
+    func getAllCategories() -> [String] {
+        return (fetchedResultsController.fetchedObjects ?? []).compactMap { $0.title }
     }
 
     // MARK: - Private Methods
@@ -76,41 +88,5 @@ final class TrackerCategoryStore: NSObject {
         req.fetchLimit = 1
         req.predicate = NSPredicate(format: "%K ==[cd] %@", #keyPath(TrackerCategoryCoreData.title), title)
         return try? ctx.fetch(req).first
-    }
-}
-
-// MARK: - NSFetchedResultsControllerDelegate
-
-extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        sectionChanges.removeAll(); objectChanges.removeAll()
-    }
-
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-        switch type {
-        case .insert: sectionChanges.append(.insert(sectionIndex))
-        case .delete: sectionChanges.append(.delete(sectionIndex))
-        default: break
-        }
-    }
-
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        switch type {
-        case .insert:
-            if let new = newIndexPath { objectChanges.append(.insert(new)) }
-        case .delete:
-            if let old = indexPath { objectChanges.append(.delete(old)) }
-        case .update:
-            if let idx = indexPath { objectChanges.append(.update(idx)) }
-        case .move:
-            if let old = indexPath, let new = newIndexPath { objectChanges.append(.move(from: old, to: new)) }
-        @unknown default:
-            break
-        }
-    }
-
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        delegate?.categoryStoreDidChange(sectionChanges: sectionChanges, objectChanges: objectChanges)
-        sectionChanges.removeAll(); objectChanges.removeAll()
     }
 }
