@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import CoreData
 
 final class TrackerCategorySelectionViewModel {
 
@@ -21,9 +20,12 @@ final class TrackerCategorySelectionViewModel {
         }
     }
 
+    // MARK: - Public Properties
+
+    let categoryStore: TrackerCategoryStore
+
     // MARK: - Private Properties
 
-    private let categoryStore: TrackerCategoryStore
     private var categories: [TrackerCategory] = []
 
     // MARK: - Initializers
@@ -67,12 +69,8 @@ final class TrackerCategorySelectionViewModel {
     // MARK: - Private Methods
 
     private func loadCategories() {
-        let fetchedObjects = categoryStore.getAllCategories()
-        self.categories = fetchedObjects.compactMap { coreDataCategory in
-            TrackerCategory(
-                title: coreDataCategory.title ?? "",
-                trackers: []  // Trackers are not needed for category list
-            )
+        self.categories = categoryStore.getAllCategories().map { title in
+            TrackerCategory(title: title, trackers: [])  // Trackers are not needed for category list
         }
         onCategoriesChanged?()
     }

@@ -38,14 +38,14 @@ final class TrackerCategorySelectionViewController: UIViewController {
 
     private lazy var placeholderImageView: UIImageView = {
         let view = UIImageView()
-        view.image = UIImage(named: "icon_dizzy")
+        view.image = UIImage.iconDizzy
         view.contentMode = .scaleAspectFit
         return view
     }()
 
     private lazy var placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = "Привычки и события можно\nобъединить по смыслу"
+        label.text = L10n.categoriesDescription
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .ypBlack
         label.textAlignment = .center
@@ -55,7 +55,7 @@ final class TrackerCategorySelectionViewController: UIViewController {
 
     private lazy var addCategoryButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Добавить категорию", for: .normal)
+        button.setTitle(L10n.addCategoryButton, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypBlack
@@ -115,15 +115,15 @@ final class TrackerCategorySelectionViewController: UIViewController {
     }
 
     private func setupNavigationBar() {
-        title = "Категория"
+        title = L10n.categoryTitle
         navigationItem.hidesBackButton = true
     }
 
     private func presentNewCategoryViewController() {
-        let newCategoryVC = TrackerNewCategoryViewController()
+        let viewModel = TrackerNewCategoryViewModel()
+        let newCategoryVC = TrackerNewCategoryViewController(viewModel: viewModel)
         newCategoryVC.onCategoryCreated = { [weak self] newCategory in
             guard let self = self else { return }
-
             self.viewModel.addCategory(title: newCategory)
         }
 

@@ -97,3 +97,29 @@ final class CategoryCell: UITableViewCell {
         ])
     }
 }
+
+// MARK: - Preview
+
+#if DEBUG
+#Preview("Category Cell - Selected") {
+    let cell: UIView = {
+        let c = CategoryCell()
+        c.configure(title: "Домашние дела", isSelected: true, isFirstCell: true, isLastCell: true)
+        c.frame = CGRect(x: 0, y: 0, width: 375, height: 75)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+
+#Preview("Category Cell - Not Selected") {
+    let cell: UIView = {
+        let c = CategoryCell()
+        c.configure(title: "Работа", isSelected: false, isFirstCell: false, isLastCell: false)
+        c.frame = CGRect(x: 0, y: 0, width: 375, height: 75)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+#endif

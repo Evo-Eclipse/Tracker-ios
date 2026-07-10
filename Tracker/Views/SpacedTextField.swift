@@ -29,3 +29,20 @@ final class SpacedTextField: UITextField {
         adjustedTextRect(forBounds: bounds)
     }
 }
+
+// MARK: - Preview
+
+#if DEBUG
+#Preview("Spaced TextField") {
+    let textField: UIView = {
+        let tf = SpacedTextField()
+        tf.placeholder = "Введите текст"
+        tf.backgroundColor = .ypBackground.withAlphaComponent(0.3)
+        tf.layer.cornerRadius = 16
+        tf.frame = CGRect(x: 0, y: 0, width: 375, height: 75)
+        tf.layoutIfNeeded()
+        return tf
+    }()
+    textField
+}
+#endif

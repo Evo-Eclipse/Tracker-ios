@@ -47,3 +47,29 @@ final class ColorCollectionViewCell: UICollectionViewCell {
         colorView.backgroundColor = color
     }
 }
+
+// MARK: - Preview
+
+#if DEBUG
+#Preview("Color Cell - Blue") {
+    let cell: UIView = {
+        let c = ColorCollectionViewCell()
+        c.configure(with: .ypSelection1)
+        c.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+
+#Preview("Color Cell - Red") {
+    let cell: UIView = {
+        let c = ColorCollectionViewCell()
+        c.configure(with: .ypSelection3)
+        c.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+#endif

@@ -59,3 +59,31 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         cardView.backgroundColor = isSelected ? .ypLightGray : .clear
     }
 }
+
+// MARK: - Preview
+
+#if DEBUG
+#Preview("Emoji Cell - Selected") {
+    let cell: UIView = {
+        let c = EmojiCollectionViewCell()
+        c.emojiLabel.text = "😊"
+        c.setSelected(true)
+        c.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+
+#Preview("Emoji Cell - Not Selected") {
+    let cell: UIView = {
+        let c = EmojiCollectionViewCell()
+        c.emojiLabel.text = "🏃"
+        c.setSelected(false)
+        c.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+#endif

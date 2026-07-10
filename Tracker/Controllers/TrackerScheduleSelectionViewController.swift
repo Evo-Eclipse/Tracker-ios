@@ -15,6 +15,8 @@ final class TrackerScheduleSelectionViewController: UIViewController {
 
     // MARK: - Private Properties
 
+    private let viewModel: TrackerScheduleSelectionViewModel
+
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .clear
@@ -28,7 +30,7 @@ final class TrackerScheduleSelectionViewController: UIViewController {
 
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(L10n.doneButton, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypBlack
@@ -37,7 +39,16 @@ final class TrackerScheduleSelectionViewController: UIViewController {
         return button
     }()
 
-    private var selectedDays: Set<Weekday> = []
+    // MARK: - Initializers
+
+    init(viewModel: TrackerScheduleSelectionViewModel = TrackerScheduleSelectionViewModel()) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     // MARK: - Overrides Methods
 
@@ -54,14 +65,14 @@ final class TrackerScheduleSelectionViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func doneButtonTapped() {
-        onScheduleSelected?(selectedDays)
+        onScheduleSelected?(viewModel.selectedDays)
         navigationController?.popViewController(animated: true)
     }
 
     // MARK: - Private Methods
 
     private func setupNavigationBar() {
-        title = "Расписание"
+        title = L10n.scheduleTitle
         navigationItem.hidesBackButton = true
     }
 
@@ -91,7 +102,7 @@ final class TrackerScheduleSelectionViewController: UIViewController {
 
 extension TrackerScheduleSelectionViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Weekday.allCases.count
+        return viewModel.getWeekdays().count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -102,10 +113,10 @@ extension TrackerScheduleSelectionViewController: UITableViewDataSource {
             return UITableViewCell()
         }
 
-        let weekDay = Weekday.allCases[indexPath.row]
-        let isSelected = selectedDays.contains(weekDay)
+        let weekDay = viewModel.getWeekdays()[indexPath.row]
+        let isSelected = viewModel.isDaySelected(weekDay)
         let isFirstCell = indexPath.row == 0
-        let isLastCell = indexPath.row == Weekday.allCases.count - 1
+        let isLastCell = indexPath.row == viewModel.getWeekdays().count - 1
 
         cell.configure(
             title: weekDay.long,
@@ -114,12 +125,8 @@ extension TrackerScheduleSelectionViewController: UITableViewDataSource {
             isLastCell: isLastCell
         )
 
-        cell.onSwitchToggled = { [weak self] isOn in
-            if isOn {
-                self?.selectedDays.insert(weekDay)
-            } else {
-                self?.selectedDays.remove(weekDay)
-            }
+        cell.onSwitchToggled = { [weak self] _ in
+            self?.viewModel.toggleDay(weekDay)
         }
 
         return cell

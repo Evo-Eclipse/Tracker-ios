@@ -15,9 +15,11 @@ final class TrackerNewCategoryViewController: UIViewController {
 
     // MARK: - Private Properties
 
+    private let viewModel: TrackerNewCategoryViewModel
+
     private lazy var titleTextField: UITextField = {
         let textField = SpacedTextField()
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = L10n.categoryNamePlaceholder
         textField.font = .systemFont(ofSize: 17, weight: .regular)
         textField.backgroundColor = .ypBackground.withAlphaComponent(0.3)
         textField.layer.cornerRadius = 16
@@ -31,7 +33,7 @@ final class TrackerNewCategoryViewController: UIViewController {
 
     private lazy var warningLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = L10n.characterLimitMessage
         label.font = .systemFont(ofSize: 17, weight: .regular)
         label.textColor = .ypRed
         label.isHidden = true
@@ -40,7 +42,7 @@ final class TrackerNewCategoryViewController: UIViewController {
 
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(L10n.doneButton, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypGray
@@ -50,7 +52,16 @@ final class TrackerNewCategoryViewController: UIViewController {
         return button
     }()
 
-    private let maxTitleLength = 38
+    // MARK: - Initializers
+
+    init(viewModel: TrackerNewCategoryViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     // MARK: - Overrides Methods
 
@@ -60,40 +71,31 @@ final class TrackerNewCategoryViewController: UIViewController {
 
         view.backgroundColor = .ypWhite
 
+        setupViewModel()
         setupNavigationBar()
         setupViews()
         setupConstraints()
     }
 
+    private func setupViewModel() {
+        viewModel.delegate = self
+    }
+
     // MARK: - Actions
 
     @objc private func doneButtonTapped() {
-        if let newCategoryText = titleTextField.text,
-           !newCategoryText.trimmingCharacters(in: .whitespaces).isEmpty {
-            let trimmedText = newCategoryText.trimmingCharacters(in: .whitespaces)
-            onCategoryCreated?(trimmedText)
-            dismiss(animated: true)
-        }
+        viewModel.createCategory()
     }
 
     @objc private func textFieldDidChange(_ textField: UITextField) {
-        if let text = textField.text, !text.trimmingCharacters(in: .whitespaces).isEmpty {
-            doneButton.isEnabled = true
-            doneButton.backgroundColor = .ypBlack
-        } else {
-            doneButton.isEnabled = false
-            doneButton.backgroundColor = .ypGray
-        }
-
-        if let text = textField.text, text.count > maxTitleLength {
-            textField.text = String(text.prefix(maxTitleLength))
-        }
+        guard let text = textField.text else { return }
+        viewModel.setCategoryName(text)
     }
 
     // MARK: - Private Methods
 
     private func setupNavigationBar() {
-        title = "Новая категория"
+        title = L10n.newCategoryTitle
     }
 
     private func setupViews() {
@@ -124,22 +126,26 @@ final class TrackerNewCategoryViewController: UIViewController {
 // MARK: - UITextFieldDelegate
 
 extension TrackerNewCategoryViewController: UITextFieldDelegate {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let currentText = textField.text ?? ""
-        guard let stringRange = Range(range, in: currentText) else { return false }
-        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
-
-        if updatedText.count > 38 {
-            warningLabel.isHidden = false
-        } else {
-            warningLabel.isHidden = true
-        }
-
-        return updatedText.count <= 38
-    }
-
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
+    }
+}
+
+// MARK: - TrackerNewCategoryViewModelDelegate
+
+extension TrackerNewCategoryViewController: TrackerNewCategoryViewModelDelegate {
+    func viewModelDidUpdateDoneButtonState(_ viewModel: TrackerNewCategoryViewModel, isEnabled: Bool) {
+        doneButton.isEnabled = isEnabled
+        doneButton.backgroundColor = isEnabled ? .ypBlack : .ypGray
+    }
+
+    func viewModel(_ viewModel: TrackerNewCategoryViewModel, didCreateCategory category: String) {
+        onCategoryCreated?(category)
+        dismiss(animated: true)
+    }
+
+    func viewModel(_ viewModel: TrackerNewCategoryViewModel, didUpdateError isHidden: Bool) {
+        warningLabel.isHidden = isHidden
     }
 }
