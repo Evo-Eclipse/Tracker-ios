@@ -100,3 +100,29 @@ final class ScheduleCell: UITableViewCell {
         ])
     }
 }
+
+// MARK: - Preview
+
+#if DEBUG
+#Preview("Schedule Cell - On") {
+    let cell: UIView = {
+        let c = ScheduleCell()
+        c.configure(title: "Понедельник", isSelected: true, isFirstCell: true, isLastCell: false)
+        c.frame = CGRect(x: 0, y: 0, width: 375, height: 75)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+
+#Preview("Schedule Cell - Off") {
+    let cell: UIView = {
+        let c = ScheduleCell()
+        c.configure(title: "Вторник", isSelected: false, isFirstCell: false, isLastCell: true)
+        c.frame = CGRect(x: 0, y: 0, width: 375, height: 75)
+        c.layoutIfNeeded()
+        return c
+    }()
+    cell
+}
+#endif

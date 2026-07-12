@@ -1,0 +1,77 @@
+/*
+  Localizable.strings
+  Tracker
+
+  Created by Pavel Komarov on 13.08.2025.
+
+*/
+
+"cancelButton" = "Abbrechen";
+"createButton" = "Erstellen";
+"saveButton" = "Speichern";
+"doneButton" = "Fertig";
+"addCategoryButton" = "Kategorie hinzufügen";
+"onboardingButton" = "Das sind die Technologien!";
+"filtersButton" = "Filter";
+
+"habitType" = "Gewohnheit";
+"irregularEventType" = "Unregelmäßiges Ereignis";
+"newHabitTitle" = "Neue Gewohnheit";
+"newIrregularEventTitle" = "Neues unregelmäßiges Ereignis";
+
+"trackersTab" = "Tracker";
+"statisticsTab" = "Statistik";
+"scheduleTitle" = "Zeitplan";
+"categoryTitle" = "Kategorie";
+"trackerCreationTitle" = "Tracker erstellen";
+"newCategoryTitle" = "Neue Kategorie";
+"emojiSectionTitle" = "Emoji";
+"colorSectionTitle" = "Farbe";
+"filtersTitle" = "Filter";
+
+"allTrackersFilter" = "Alle Tracker";
+"todayTrackersFilter" = "Tracker für heute";
+"completedTrackersFilter" = "Abgeschlossen";
+"incompleteTrackersFilter" = "Nicht abgeschlossen";
+
+"trackerNamePlaceholder" = "Tracker-Namen eingeben";
+"categoryNamePlaceholder" = "Kategorie-Namen eingeben";
+"searchPlaceholder" = "Suchen";
+
+"mondayFull" = "Montag";
+"tuesdayFull" = "Dienstag";
+"wednesdayFull" = "Mittwoch";
+"thursdayFull" = "Donnerstag";
+"fridayFull" = "Freitag";
+"saturdayFull" = "Samstag";
+"sundayFull" = "Sonntag";
+
+"mondayShort" = "Mo";
+"tuesdayShort" = "Di";
+"wednesdayShort" = "Mi";
+"thursdayShort" = "Do";
+"fridayShort" = "Fr";
+"saturdayShort" = "Sa";
+"sundayShort" = "So";
+
+"emptyTrackersMessage" = "Was werden wir verfolgen?";
+"noSearchResultsMessage" = "Nichts gefunden";
+"emptyStatisticsMessage" = "Noch nichts zu analysieren";
+"completedTrackersTitle" = "Tracker abgeschlossen";
+"bestPeriodTitle" = "Beste Periode";
+"perfectDaysTitle" = "Perfekte Tage";
+"averageValueTitle" = "Durchschnittswert";
+"onboardingFirstPage" = "Verfolgen Sie nur das, was Sie wollen";
+"onboardingSecondPage" = "Auch wenn es nicht Liter Wasser und Yoga ist";
+"categoriesDescription" = "Gewohnheiten und Ereignisse können\nnach Bedeutung kombiniert werden";
+"characterLimitMessage" = "38 Zeichen Limit";
+"characterLimitTemplate" = "%d Zeichen Limit";
+"everyDaySchedule" = "Jeden Tag";
+"defaultCategoryName" = "Standard";
+
+"editAction" = "Bearbeiten";
+"deleteAction" = "Löschen";
+"deleteConfirmationTitle" = "Sind Sie sicher, dass Sie den Tracker löschen möchten?";
+"editHabitTitle" = "Bearbeitung der Gewohnheit";
+
+"daysCount" = "Tage";

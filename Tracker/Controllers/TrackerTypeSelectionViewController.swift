@@ -15,6 +15,21 @@ final class TrackerTypeSelectionViewController: UIViewController {
 
     // MARK: - Private Properties
 
+    private let viewModel: TrackerTypeSelectionViewModel
+
+    // MARK: - Initializers
+
+    init(categoryStore: TrackerCategoryStore) {
+        self.viewModel = TrackerTypeSelectionViewModel(categoryStore: categoryStore)
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Override Methods
+
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -26,7 +41,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
 
     private lazy var habitButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Привычка", for: .normal)
+        button.setTitle(L10n.habitType, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypBlack
@@ -37,7 +52,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
 
     private lazy var irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Нерегулярное событие", for: .normal)
+        button.setTitle(L10n.irregularEventType, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypBlack
@@ -61,13 +76,15 @@ final class TrackerTypeSelectionViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func habitButtonTapped() {
-        let newTrackerVC = TrackerCreationFormViewController(trackerType: .habit)
+        let creationViewModel = viewModel.createCreationFormViewModel(for: .habit)
+        let newTrackerVC = TrackerCreationFormViewController(viewModel: creationViewModel)
         newTrackerVC.delegate = trackerDelegate
         navigationController?.pushViewController(newTrackerVC, animated: true)
     }
 
     @objc private func irregularEventButtonTapped() {
-        let newTrackerVC = TrackerCreationFormViewController(trackerType: .irregularEvent)
+        let creationViewModel = viewModel.createCreationFormViewModel(for: .irregularEvent)
+        let newTrackerVC = TrackerCreationFormViewController(viewModel: creationViewModel)
         newTrackerVC.delegate = trackerDelegate
         navigationController?.pushViewController(newTrackerVC, animated: true)
     }
@@ -75,7 +92,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     // MARK: - Private Methods
 
     private func setupNavigationBar() {
-        title = "Создание трекера"
+        title = L10n.trackerCreationTitle
         navigationItem.hidesBackButton = true
     }
 

@@ -21,7 +21,7 @@ final class TrackerCreationFormViewController: UIViewController {
 
     private lazy var titleTextField: UITextField = {
         let textField = SpacedTextField()
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = L10n.trackerNamePlaceholder
         textField.font = .systemFont(ofSize: 17, weight: .regular)
         textField.backgroundColor = .ypBackground.withAlphaComponent(0.3)
         textField.layer.cornerRadius = 16
@@ -35,7 +35,7 @@ final class TrackerCreationFormViewController: UIViewController {
 
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение \(maxTitleLength) символов"
+        label.text = MessageFormatter.characterLimitTemplate(maxTitleLength)
         label.font = .systemFont(ofSize: 17, weight: .regular)
         label.textColor = .ypRed
         label.textAlignment = .center
@@ -50,13 +50,13 @@ final class TrackerCreationFormViewController: UIViewController {
         tableView.isScrollEnabled = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(FormRowCell.self, forCellReuseIdentifier: FormRowCell.identifier)
         return tableView
     }()
 
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle(L10n.cancelButton, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypRed, for: .normal)
         button.backgroundColor = .clear
@@ -81,7 +81,7 @@ final class TrackerCreationFormViewController: UIViewController {
 
     private lazy var emojiLabel: UILabel = {
         let label = UILabel()
-        label.text = "Emoji"
+        label.text = L10n.emojiSectionTitle
         label.font = .systemFont(ofSize: 19, weight: .bold)
         return label
     }()
@@ -112,14 +112,14 @@ final class TrackerCreationFormViewController: UIViewController {
 
     private lazy var colorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Цвет"
+        label.text = L10n.colorSectionTitle
         label.font = .systemFont(ofSize: 19, weight: .bold)
         return label
     }()
 
     private lazy var createButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle(L10n.createButton, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypGray
@@ -132,19 +132,17 @@ final class TrackerCreationFormViewController: UIViewController {
     private var tableViewTopConstraint: NSLayoutConstraint!
     private var errorLabelHeightConstraint: NSLayoutConstraint!
 
-    private let trackerType: TrackerType
-    private let maxTitleLength = 38
+    private let viewModel: TrackerCreationFormViewModel
+    private let maxTitleLength = Validation.maxTitleLength
 
-    private var selectedCategory: String?
-    private var selectedSchedule: Set<Weekday> = []
-
-    private var selectedEmoji: String?
-    private var selectedColor: UIColor?
+    private var trackerType: TrackerType {
+        return viewModel.trackerType
+    }
 
     // MARK: - Initializers
 
-    init(trackerType: TrackerType) {
-        self.trackerType = trackerType
+    init(viewModel: TrackerCreationFormViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -160,10 +158,15 @@ final class TrackerCreationFormViewController: UIViewController {
 
         view.backgroundColor = .ypWhite
 
+        setupViewModel()
         setupNavigationBar()
         setupViews()
         setupConstraints()
         setErrorHidden(true)
+    }
+
+    private func setupViewModel() {
+        viewModel.delegate = self
     }
 
     // MARK: - Actions
@@ -173,36 +176,12 @@ final class TrackerCreationFormViewController: UIViewController {
     }
 
     @objc private func createButtonTapped() {
-        guard let title = titleTextField.text,
-              !title.trimmingCharacters(in: .whitespaces).isEmpty,
-              let emoji = selectedEmoji,
-              let uiColor = selectedColor
-        else { return }
-
-        let trimmedTitle = title.trimmingCharacters(in: .whitespaces)
-        let category = selectedCategory ?? "По умолчанию"
-        let schedule = trackerType.hasSchedule ? Array(selectedSchedule) : Weekday.allCases
-
-        let newTracker = Tracker(
-            id: UUID(),
-            title: trimmedTitle,
-            color: uiColor.appColor,
-            emoji: emoji,
-            schedule: schedule
-        )
-
-        delegate?.didCreateTracker(newTracker, in: category)
-        dismiss(animated: true)
+        viewModel.createTracker()
     }
 
     @objc private func textFieldDidChange() {
-        if titleTextField.text?.count ?? 0 > 38 {
-            titleTextField.text = String((titleTextField.text ?? "").prefix(38))
-            setErrorHidden(false)
-        } else {
-            setErrorHidden(true)
-        }
-        updateCreateButtonState()
+        guard let text = titleTextField.text else { return }
+        viewModel.setTitle(text)
     }
 
     // MARK: - Private Methods
@@ -283,16 +262,6 @@ final class TrackerCreationFormViewController: UIViewController {
         ])
     }
 
-    private func updateCreateButtonState() {
-        let isTitleValid = !(titleTextField.text?.isEmpty ?? true)
-        let isScheduleSelected = trackerType.hasSchedule ? !selectedSchedule.isEmpty : true
-        let isEmojiSelected = selectedEmoji != nil
-        let isColorSelected = selectedColor != nil
-
-        createButton.isEnabled = isTitleValid && isScheduleSelected && isEmojiSelected && isColorSelected
-        createButton.backgroundColor = createButton.isEnabled ? .ypBlack : .ypGray
-    }
-
     private func setErrorHidden(_ hidden: Bool) {
         let wasHidden = errorLabel.isHidden
         errorLabel.isHidden = hidden
@@ -332,100 +301,21 @@ extension TrackerCreationFormViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: FormRowCell.identifier, for: indexPath) as? FormRowCell else {
+            return UITableViewCell()
+        }
 
-        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-
-        cell.backgroundColor = UIColor.ypBackground.withAlphaComponent(0.3)
-        cell.accessoryType = .disclosureIndicator
-        cell.selectionStyle = .none
-
-        let containerView = UIView()
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        cell.contentView.addSubview(containerView)
-
-        let titleLabel = UILabel()
-        titleLabel.font = .systemFont(ofSize: 17, weight: .regular)
-        titleLabel.textColor = .ypBlack
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(titleLabel)
-
-        let subtitleLabel = UILabel()
-        subtitleLabel.font = .systemFont(ofSize: 17, weight: .regular)
-        subtitleLabel.textColor = .ypGray
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(subtitleLabel)
+        let position: FormRowCell.Position = trackerType.hasSchedule
+            ? (indexPath.row == 0 ? .top : .bottom)
+            : .single
 
         if indexPath.row == 0 {
-            titleLabel.text = "Категория"
-            subtitleLabel.text = selectedCategory
+            cell.configure(title: L10n.categoryTitle, subtitle: viewModel.selectedCategory, position: position)
         } else {
-            titleLabel.text = "Расписание"
-            if selectedSchedule.isEmpty {
-                subtitleLabel.text = nil
-            } else if selectedSchedule.count == 7 {
-                subtitleLabel.text = "Каждый день"
-            } else {
-                let shortNames = selectedSchedule.sorted { $0.rawValue < $1.rawValue }.map { day in
-                    day.short
-                }
-                subtitleLabel.text = shortNames.joined(separator: ", ")
-            }
+            cell.configure(title: L10n.scheduleTitle,
+                           subtitle: DaysFormatter.scheduleSubtitle(for: viewModel.selectedSchedule),
+                           position: position)
         }
-
-        let hasSubtitle = subtitleLabel.text != nil
-
-        // Constraints: if hasSubtitle, then subtitleLabel is below titleLabel, otherwise titleLabel is centered
-        NSLayoutConstraint.activate([
-            containerView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
-            containerView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -40),
-            containerView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 15),
-            containerView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -15),
-
-            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-        ])
-
-        if hasSubtitle {
-            NSLayoutConstraint.activate([
-                titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
-                subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),
-                subtitleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-                subtitleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-                subtitleLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
-            ])
-        } else {
-            NSLayoutConstraint.activate([
-                titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
-            ])
-        }
-
-        // If hasSchedule, then first cell has rounded top corners and separator, second cell has rounded bottom corners, otherwise all corners are rounded
-        if trackerType.hasSchedule {
-            if indexPath.row == 0 {
-                cell.layer.cornerRadius = 16
-                cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-
-                let separator = UIView()
-                separator.backgroundColor = .ypGray
-                separator.translatesAutoresizingMaskIntoConstraints = false
-                cell.contentView.addSubview(separator)
-
-                NSLayoutConstraint.activate([
-                    separator.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
-                    separator.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
-                    separator.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
-                    separator.heightAnchor.constraint(equalToConstant: 0.5)
-                ])
-            } else {
-                cell.layer.cornerRadius = 16
-                cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            }
-        } else {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        }
-
         return cell
     }
 }
@@ -442,16 +332,28 @@ extension TrackerCreationFormViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiCollectionViewCell.reuseIdentifier, for: indexPath) as? EmojiCollectionViewCell else {
                 return UICollectionViewCell()
             }
-            cell.emojiLabel.text = String.selectionEmojis[indexPath.item]
+            let emoji = String.selectionEmojis[indexPath.item]
+            cell.emojiLabel.text = emoji
             cell.contentView.backgroundColor = .clear
             cell.layer.cornerRadius = 16
+            // Restore selection state so it survives cell reuse while scrolling
+            cell.setSelected(emoji == viewModel.selectedEmoji)
             return cell
         } else {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorCollectionViewCell.reuseIdentifier, for: indexPath) as? ColorCollectionViewCell else {
                 return UICollectionViewCell()
             }
-            cell.configure(with: UIColor.selectionColors[indexPath.item])
+            let color = UIColor.selectionColors[indexPath.item]
+            cell.configure(with: color)
             cell.layer.cornerRadius = 8
+            // Restore selection state so it survives cell reuse while scrolling
+            if color == viewModel.selectedColor {
+                cell.contentView.layer.borderWidth = 3
+                cell.contentView.layer.borderColor = color.withAlphaComponent(0.3).cgColor
+                cell.contentView.layer.cornerRadius = 8
+            } else {
+                cell.contentView.layer.borderWidth = 0
+            }
             return cell
         }
     }
@@ -480,17 +382,16 @@ extension TrackerCreationFormViewController: UICollectionViewDelegate {
         if collectionView == emojiCollectionView {
             if let cell = collectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
                 cell.setSelected(true)
-                selectedEmoji = String.selectionEmojis[indexPath.item]
+                viewModel.setSelectedEmoji(String.selectionEmojis[indexPath.item])
             }
         } else {
             if let cell = collectionView.cellForItem(at: indexPath) as? ColorCollectionViewCell {
                 cell.contentView.layer.borderWidth = 3
                 cell.contentView.layer.borderColor = UIColor.selectionColors[indexPath.item].withAlphaComponent(0.3).cgColor
                 cell.contentView.layer.cornerRadius = 8
-                selectedColor = UIColor.selectionColors[indexPath.item]
+                viewModel.setSelectedColor(UIColor.selectionColors[indexPath.item])
             }
         }
-        updateCreateButtonState()
     }
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
@@ -515,26 +416,47 @@ extension TrackerCreationFormViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row == 0 {
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-            let categoryStore = appDelegate.categoryStore
-
-            let viewModel = TrackerCategorySelectionViewModel(categoryStore: categoryStore)
-            let categoryVC = TrackerCategorySelectionViewController(viewModel: viewModel)
+            let categoryVC = TrackerCategorySelectionViewController(
+                viewModel: TrackerCategorySelectionViewModel(categoryStore: viewModel.categoryStore)
+            )
 
             categoryVC.onCategorySelected = { [weak self] selectedCategory in
-                self?.selectedCategory = selectedCategory
-                self?.updateCreateButtonState()
-                self?.tableView.reloadData()
+                guard let self = self, let selectedCategory = selectedCategory else { return }
+                self.viewModel.setSelectedCategory(selectedCategory)
             }
             navigationController?.pushViewController(categoryVC, animated: true)
         } else {
             let scheduleVC = TrackerScheduleSelectionViewController()
             scheduleVC.onScheduleSelected = { [weak self] selectedDays in
-                self?.selectedSchedule = selectedDays
-                self?.updateCreateButtonState()
-                self?.tableView.reloadData()
+                self?.viewModel.setSelectedSchedule(selectedDays)
             }
             navigationController?.pushViewController(scheduleVC, animated: true)
         }
+    }
+}
+
+// MARK: - TrackerCreationFormViewModelDelegate
+
+extension TrackerCreationFormViewController: TrackerCreationFormViewModelDelegate {
+    func viewModelDidUpdateCreateButtonState(_ viewModel: TrackerCreationFormViewModel, isEnabled: Bool) {
+        createButton.isEnabled = isEnabled
+        createButton.backgroundColor = isEnabled ? .ypBlack : .ypGray
+    }
+
+    func viewModelDidUpdateSelectedCategory(_ viewModel: TrackerCreationFormViewModel, category: String) {
+        tableView.reloadData()
+    }
+
+    func viewModelDidUpdateSelectedSchedule(_ viewModel: TrackerCreationFormViewModel, schedule: Set<Weekday>) {
+        tableView.reloadData()
+    }
+
+    func viewModel(_ viewModel: TrackerCreationFormViewModel, didCreateTracker tracker: Tracker, category: String) {
+        delegate?.didCreateTracker(tracker, in: category)
+        dismiss(animated: true)
+    }
+
+    func viewModel(_ viewModel: TrackerCreationFormViewModel, didUpdateError isHidden: Bool) {
+        setErrorHidden(isHidden)
     }
 }

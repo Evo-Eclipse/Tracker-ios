@@ -1,0 +1,77 @@
+/*
+  Localizable.strings
+  Tracker
+
+  Created by Pavel Komarov on 13.08.2025.
+
+*/
+
+"cancelButton" = "Annuleren";
+"createButton" = "Maken";
+"saveButton" = "Opslaan";
+"doneButton" = "Klaar";
+"addCategoryButton" = "Categorie toevoegen";
+"onboardingButton" = "Dit zijn de technologieën!";
+"filtersButton" = "Filters";
+
+"habitType" = "Gewoonte";
+"irregularEventType" = "Onregelmatige gebeurtenis";
+"newHabitTitle" = "Nieuwe gewoonte";
+"newIrregularEventTitle" = "Nieuwe onregelmatige gebeurtenis";
+
+"trackersTab" = "Trackers";
+"statisticsTab" = "Statistieken";
+"scheduleTitle" = "Schema";
+"categoryTitle" = "Categorie";
+"trackerCreationTitle" = "Tracker maken";
+"newCategoryTitle" = "Nieuwe categorie";
+"emojiSectionTitle" = "Emoji";
+"colorSectionTitle" = "Kleur";
+"filtersTitle" = "Filters";
+
+"allTrackersFilter" = "Alle trackers";
+"todayTrackersFilter" = "Trackers voor vandaag";
+"completedTrackersFilter" = "Voltooid";
+"incompleteTrackersFilter" = "Niet voltooid";
+
+"trackerNamePlaceholder" = "Voer tracker naam in";
+"categoryNamePlaceholder" = "Voer categorie naam in";
+"searchPlaceholder" = "Zoeken";
+
+"mondayFull" = "Maandag";
+"tuesdayFull" = "Dinsdag";
+"wednesdayFull" = "Woensdag";
+"thursdayFull" = "Donderdag";
+"fridayFull" = "Vrijdag";
+"saturdayFull" = "Zaterdag";
+"sundayFull" = "Zondag";
+
+"mondayShort" = "Ma";
+"tuesdayShort" = "Di";
+"wednesdayShort" = "Wo";
+"thursdayShort" = "Do";
+"fridayShort" = "Vr";
+"saturdayShort" = "Za";
+"sundayShort" = "Zo";
+
+"emptyTrackersMessage" = "Wat gaan we volgen?";
+"noSearchResultsMessage" = "Niets gevonden";
+"emptyStatisticsMessage" = "Nog niets te analyseren";
+"completedTrackersTitle" = "Trackers voltooid";
+"bestPeriodTitle" = "Beste periode";
+"perfectDaysTitle" = "Perfecte dagen";
+"averageValueTitle" = "Gemiddelde waarde";
+"onboardingFirstPage" = "Volg alleen wat je wilt";
+"onboardingSecondPage" = "Zelfs als het geen liters water en yoga is";
+"categoriesDescription" = "Gewoontes en gebeurtenissen kunnen\nworden gecombineerd op betekenis";
+"characterLimitMessage" = "38 karakters limiet";
+"characterLimitTemplate" = "%d karakters limiet";
+"everyDaySchedule" = "Elke dag";
+"defaultCategoryName" = "Standaard";
+
+"editAction" = "Bewerken";
+"deleteAction" = "Verwijderen";
+"deleteConfirmationTitle" = "Weet u zeker dat u de tracker wilt verwijderen?";
+"editHabitTitle" = "Gewoonte bewerken";
+
+"daysCount" = "dagen";

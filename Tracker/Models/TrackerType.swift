@@ -10,16 +10,16 @@ import Foundation
 enum TrackerType {
     case habit
     case irregularEvent
-    
+
     var title: String {
         switch self {
         case .habit:
-            return "Новая привычка"
+            return L10n.newHabitTitle
         case .irregularEvent:
-            return "Новое нерегулярное событие"
+            return L10n.newIrregularEventTitle
         }
     }
-    
+
     var hasSchedule: Bool {
         switch self {
         case .habit:

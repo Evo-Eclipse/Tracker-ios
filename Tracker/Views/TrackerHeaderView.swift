@@ -57,3 +57,27 @@ final class TrackerHeaderView: UICollectionReusableView {
         ])
     }
 }
+
+// MARK: - Preview
+
+#if DEBUG
+#Preview("Tracker Header - Short Title") {
+    let header: UIView = {
+        let h = TrackerHeaderView(frame: CGRect(x: 0, y: 0, width: 375, height: 38))
+        h.configure(with: "Домашние дела")
+        h.layoutIfNeeded()
+        return h
+    }()
+    header
+}
+
+#Preview("Tracker Header - Long Title") {
+    let header: UIView = {
+        let h = TrackerHeaderView(frame: CGRect(x: 0, y: 0, width: 375, height: 50))
+        h.configure(with: "Очень длинное название категории которое должно переноситься на несколько строк")
+        h.layoutIfNeeded()
+        return h
+    }()
+    header
+}
+#endif

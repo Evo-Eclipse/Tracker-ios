@@ -7,14 +7,18 @@
 
 import UIKit
 import CoreData
+import AppMetricaCore
 
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+
+        if let configuration = AppMetricaConfiguration(apiKey: "0dd49635-0d93-42ab-ae72-650cb95c9d84") {
+            AppMetrica.activate(with: configuration)
+        }
+
         return true
     }
 
@@ -34,13 +38,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Core Data stack
 
-    lazy var persistentContainer: NSPersistentContainer = {
+    private lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Tracker")
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+        container.loadPersistentStores { _, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
-        })
+        }
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         container.viewContext.automaticallyMergesChangesFromParent = true
         return container
@@ -48,21 +52,24 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Stores
 
+    /// Shared tracker store instance for managing trackers
     lazy var trackerStore: TrackerStore = {
         TrackerStore(container: persistentContainer)
     }()
 
+    /// Shared category store instance for managing tracker categories
     lazy var categoryStore: TrackerCategoryStore = {
         TrackerCategoryStore(container: persistentContainer)
     }()
 
+    /// Shared record store instance for managing tracker completion records
     lazy var recordStore: TrackerRecordStore = {
         TrackerRecordStore(container: persistentContainer)
     }()
 
     // MARK: - Core Data Saving support
 
-    func saveContext () {
+    func saveContext() {
         let context = persistentContainer.viewContext
         if context.hasChanges {
             do {
